@@ -1,0 +1,35 @@
+{
+  "Agent":{
+     "Model":"101x",
+     "DeviceName":"netio1",
+     "MAC":"24:A4:2C:38:D6:FA",
+     "JSONVer":"2.0",
+     "Time":"2021-01-20T22:06:33-08:00",
+     "Uptime":34754,
+     "Version":"2.0.20",
+     "OemID":"5",
+     "VendorID":"0",
+     "NumOutputs":1
+  },
+  "GlobalMeasure":{
+     "Voltage":116,
+     "TotalLoad":22,
+     "TotalEnergy":106110,
+     "OverallPowerFactor":0.70,
+     "Frequency":60.0,
+     "EnergyStart":"1970-01-01T00:00:00-08:00"
+  },
+  "Outputs":[
+     {
+        "ID":1,
+        "Name":"Power output 1",
+        "State":1,
+        "Action":6,
+        "Delay":2000,
+        "Current":270,
+        "PowerFactor":0.70,
+        "Energy":106110,
+        "Load":22
+     }
+  ]
+}

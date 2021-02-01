@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Document</title>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+		<script defer src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+		<script defer type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+		<script defer type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+		<script defer src="./main.js"></script>
+		<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+		<link rel="preconnect" href="https://fonts.gstatic.com">
+		<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+		
+		<link type="text/css" rel="stylesheet" href="./style.css" />
+	</head>
+	<body>
+		<main class="dashboard">
+			<nav class="dashboard__nav">
+				<a class="link__energy" href="javascript:">Energy<div class="test__div"></div></a>
+				
+				<a class="link__schedule" href="#">Schedule<div class="arrow-left"></div></a>
+				<a class="link__control" href="#">Control<div class="arrow-left"></div></a>
+			</nav>
+			<div class="dashboard__container">
+					<header class="dashboard__header">
+						<h1 class="dashboard__title">Energy Dashboard</h1>
+						<select class="chart__selection">
+							<option class="chart__option">---Select Host---</option>
+						</select><p class="select__title"></p>
+						<button type="button" class="btn__date-picker">&#xf133 Select Range</button>
+					</header>
+					<section class="chart__container">
+							<section class="chart__left-side">
+							
+								
+								<div class="chart__figure1">
+									<canvas class="chart__current" width="200" height="200" aria-label="doughnut chart showing data as a Current kWh" role="img">
+									</canvas>
+									<div class="chart__caption1"></figcaption>
+										<span class="canvas__title1">Updated Wh(Watt hour) Used Today</span>
+									</div>
+								</div>
+								
+								
+								<figure class="chart__figure2">
+									<canvas class="chart__hourly" width="200" height="200" aria-label="Example doughnut chart showing data as a Hourly kWh" role="img"></canvas>
+									<figcaption class="chart__caption2">
+										<span class="canvas__title2">Wh(Watt hour) used last hour</span>
+									</figcaption>
+								</figure>
+								
+								<figure class="chart__figure3">
+									<canvas class="chart__daily" width="200" height="200" aria-label="Example doughnut chart showing data as a Daily kWh" role="img"></canvas>
+									<figcaption class="chart__caption3">
+										<span class="canvas__title3">kWh(Killo Watt hour) used previous day</span>
+									</figcaption>
+								</figure>
+							
+							</section>
+							
+							<section class="chart__right-side">
+								
+								<div class="chart__range-container">
+									<canvas class="chart__date-range" width="200" height="200" aria-label="Example doughnut chart showing data as a percentage" role="img"></canvas>
+								</div>
+								<div class="chart__price-circle">	
+									<div class="chart__engergy-price">
+										<p class="chart__price"><span class="chart__dollar" data-count=""> 0</span></p>
+									</div>
+								</div>
+								<div class="chart__line">
+									<p class="chart__line-title">Month to Month chart</p>
+									<canvas class="chart__multi-line" aria-label="Example doughnut chart showing data as a percentage" role="img"></canvas>
+								</div>
+							</section>
+						
+						<section class="chart__line">
+							<p class="chart__title"></p>
+							<p class="chart__day-title"></p>
+							<div class="chart__day-week-month">
+								<canvas class="chart__line-days" aria-label="Example doughnut chart showing data as a kWh line chart" role="img"></canvas>
+							</div>
+						</section>
+					</section>
+				</div>
+			</div>
+		</main>
+	</body>
+</html>
