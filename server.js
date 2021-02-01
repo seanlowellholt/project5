@@ -3,8 +3,7 @@ var app = express();
 var path = require('path');
 const btoa = require('btoa')
 const fetch = require('node-fetch')
-const request = require('request');
-const { response } = require('express');
+
 
 app.use(express.static(__dirname + '/public'))
 app.get('/', function(req, res) {

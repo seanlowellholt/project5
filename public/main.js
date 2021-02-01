@@ -60,9 +60,9 @@ function getPowerNumber(value) {
                 return Number(resetData)
              })
  
-             lineChart.data.labels = getLabels
-             lineChart.data.datasets[0].data = lineData
-             lineChart.update()
+            lineChart.data.labels = getLabels
+            lineChart.data.datasets[0].data = lineData
+            lineChart.update()
             myChart.data.datasets[0].data = [displayWatt, .100 - displayWatt]
             myChart.update()
             updateCount()
