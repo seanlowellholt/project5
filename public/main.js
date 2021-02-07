@@ -1,17 +1,27 @@
-
-const getEnergy = async (startDateday, endDateday, chart) => {
-    let watt = await fetch(`http://192.168.40.113:1880/totalload?startDateDay=${startDateday}&endDateDay=${endDateday}&command=${chart}`)
-    let response = await watt.json()
-    return response
-    
+Date.prototype.subTime = function(h,m){
+    this.setHours(this.getHours() -h)
+    this.setMinutes(this.getMinutes() -m)
+    return this
 }
 
 let date = new Date()
 const timestamp = date.toISOString()
 const counter = document.querySelector('.chart__dollar')
 const reducer = (accu, currentValue) => accu + currentValue
+const clock = Intl.DateTimeFormat("en", {
+    timeStyle: 'medium',
+    dateStyle: 'medium'
+})
 
-/////////// Dollar amount counter function //////////
+
+//// Fucntion API to get Watt load from database ////
+const getEnergy = async (startDateday, endDateday, chart) => {
+    let watt = await fetch(`http://192.168.40.113:1880/totalload?startDateDay=${startDateday}&endDateDay=${endDateday}&command=${chart}`)
+    let response = await watt.json()
+    return response
+}
+
+/// Function to increment dollar amount after calculating kWh total //////
 const updateCount = () => {
     const speed = 200
     const target = +counter.getAttribute('data-count')
@@ -21,53 +31,82 @@ const updateCount = () => {
         counter.innerText = (count + inc).toFixed(2)
         setTimeout(updateCount, 1)
     } else {
-
         counter.innerText = target
     }
 }
 
-Date.prototype.subTime = function(h,m){
-    this.setHours(this.getHours() -h)
-    this.setMinutes(this.getMinutes() -m)
-    return this
-}
+/// Function get Watt load and re format for dashboard charts ////
 
+let dateFormat = Intl.DateTimeFormat("en", {
+    month: 'short',
+    day: '2-digit'
+})
 function getPowerNumber(value) {
+        
+    if(value === 'alldata') {
+        const getFirstEntry = new Date('2020, 6, 6')
+        const everyMonth = getFirstEntry.setMonth(5)
+        let setMonth = new Date(everyMonth)
+        let startdata = setMonth.toISOString()
+        let chartType = 'linechart'
+        
+        getEnergy(timestamp, startdata, chartType).then((alldata) => {
+            let setLineLabels = []
+            let getDates = []
+            
+            alldata.forEach((data) => {
+                setLineLabels.push(new Date(data.time))
+                getDates.push(data.sum)
+            })
+            let setData = getDates.map(i=> {
+                let resetData = (i / 3600 * 10 / 1000).toFixed(2)
+                return Number(resetData)
+            })
+            
+            lineChart.data.labels = setLineLabels
+            lineChart.data.datasets[0].data = setData
+            lineChart.update()
+        })
+        
+        
+    }
+
     if(value === 'range'){
-        const setMonth = new Date('2021, 1, 1')
+        const setMonth = new Date('2021, 1, 12')
         const month = setMonth.setMonth(0)
         let newMonth = new Date(month)
         let startMonth = newMonth.toISOString()
-        let chartType = 'linechart'
+        let chartType = 'barchart'
+
         getEnergy(timestamp, startMonth, chartType).then((watthour) => {
-            let getLabels = []
+            
+            
+            let setBarLabels = []
             let getData = []
+            
             watthour.forEach((data) => {
-                getLabels.push(data.time.split("T")[0])
+                setBarLabels.push(Date.parse(data.time))
+                // setLineLabels.push(dateFormat.format(new Date(data.time)))
                 getData.push(data.sum)
             })
             let displayWatt = ((getData.reduce(reducer,0)/3600 * 10) / 1000).toFixed(2)
-            
-            //let wattRange = (watts.totalDayload / 1000).toFixed(2)
             let value1 = (displayWatt * .12).toFixed(2)
-            
-            //let watts = (watthour.totalDayload / 1000).toFixed(2)
-            //let value1 = (watts * .12).toFixed(2)
             const setValue = counter.setAttribute('data-count', value1)
+
+            /// Function step update dollar amount ///
+            updateCount()
+            
             document.querySelector(`[data-value=${value}]`).textContent = `${displayWatt}\r\nkWh`
             let lineData = getData.map(i=> {
                 let resetData = (i / 3600 * 10 / 1000).toFixed(2)
                 return Number(resetData)
              })
- 
-            lineChart.data.labels = getLabels
-            lineChart.data.datasets[0].data = lineData
-            lineChart.update()
-            myChart.data.datasets[0].data = [displayWatt, .100 - displayWatt]
+
+            barChart.data.labels = setBarLabels
+            barChart.data.datasets[0].data = lineData
+            barChart.update()
             myChart.update()
-            updateCount()
         })
-       
     } 
     if(value === 'current') {
         const hours = date.setHours(0,0,0,0)
@@ -113,14 +152,9 @@ async function getDeviceInfo(){
     document.querySelector('.select__title').textContent = `Host Name: ${name}`
 }
 
-const dataSetArray = ['current', 'range', 'hourly', 'daily']
-//getWatt('2021-01-21', '2021-01-20')
-//getPowerNumber(dataSetArray)
 getDeviceInfo()
-//updateCount()
 
-//////////////  DATE Picker ///////////
-
+/// dateRangePicker Library to select a date range for Watt load////////
 const dateRangePicker = document.querySelector('.btn__date-picker')
 $(function() {
     $(dateRangePicker).daterangepicker({
@@ -128,6 +162,7 @@ $(function() {
         showISOWeekNumbers: true,
         timePicker24Hour: true,
         timePickerSeconds: true,
+        opens: 'left',
         locale: {
             cancelLabel: 'Clear'
         }
@@ -147,10 +182,10 @@ $(function() {
                 getLabels.push(data.time.split("T")[0])
                 getData.push(data.sum)
             })
-            let displayWatt = ((getData.reduce(reducer,0)/3600 * 10) / 1000).toFixed(2)
+            let displayWatt = ((getData.reduce(reducer,0)/3600 * 10) / 1000).toFixed(3)
             
             //let wattRange = (watts.totalDayload / 1000).toFixed(2)
-            let value = (displayWatt * .12)
+            let value = (displayWatt * .12).toFixed(2)
             
             counter.setAttribute('data-count', value)
             //const dollarcount = counter.getAttribute('data-count')
@@ -163,6 +198,9 @@ $(function() {
             lineChart.data.labels = getLabels
             lineChart.data.datasets[0].data = lineData
             lineChart.update()
+            barChart.data.labels = getLabels
+            barChart.data.datasets[0].data = lineData
+            barChart.update()
             myChart.data.datasets[0].data = [displayWatt, 100 - displayWatt]
 	       myChart.update()
         })
@@ -171,7 +209,7 @@ $(function() {
 //////////////////////////////////
 
 const animationTime = '2000'; 
-const rangeContainer = document.querySelector('.chart__range-container') 
+const rangeContainer = document.querySelector('.card__doughnut-range') 
 const divElement = document.createElement('div')
 const domString = '<div class="chart__value"><span class="range__kwh" data-value="range"></p></div>'; 
 
@@ -182,7 +220,7 @@ let myChart = new Chart(ctx, {
         datasets: [
             {
                 data: [], 
-                backgroundColor: ['#265F5B'],
+                backgroundColor: ['#73FAC9'],
                 borderWidth: 0 
             }
         ]
@@ -198,45 +236,71 @@ let myChart = new Chart(ctx, {
 
 Chart.defaults.global.animation.duration = animationTime;
 divElement.innerHTML = domString;
-rangeContainer.appendChild(divElement.firstChild); 
+rangeContainer.prepend(divElement.firstChild);
 
-var gradientFill = ctx.createLinearGradient(500, 0, 100, 0);
-gradientFill.addColorStop(0, "rgba(128, 182, 244, 0.6)");
-gradientFill.addColorStop(1, "rgba(244, 144, 128, 0.6)");
-let ctx1 = document.querySelector('.chart__multi-line').getContext('2d')
-let lineChart = new Chart(ctx1, {
-    type: 'line', 
+
+
+let ctx1 = document.querySelector('.chart__timeseries').getContext('2d')
+let barChart = new Chart(ctx1, {
+    type: 'horizontalBar', 
     data: {
         labels: [],
         datasets: [{
-            label: '# of Votes',
-            fillColor: "rgba(151,187,205,0.2)",
-            strokeColor: "rgba(151,187,205,1)",
-            pointColor: "rgba(151,187,205,1)",
-            pointStrokeColor: "#fff",
-            pointHighlightFill: "#fff",
-            pointHighlightStroke: "rgba(151,187,205,1)",
-            backgroundColor: gradientFill,
+            label: '# kWh(kilo Watt hour)',
+            barThickness: 'flex',
+            maxBarThickness: 50,
+            fill: false,
+            backgroundColor: 'rgba(255,255,255,0.5)',
+            borderColor: 'rgb(123, 145, 188)',
+            borderWidth: 4,
             data: []
-        }]
+            }
+        ]
     },
     options: {
         responsive:true,
         maintainAspectRation: false,
         scales: {
             yAxes: [{
+                gridLines: {
+                    display: false
+                },
                 ticks: {
-                    beginAtZero: true
+                    fontSize:20
+                },
+                type: 'time',
+                display: true,
+                time: {
+                    unit: 'day',
+                    displayFormats: {
+                        hour: 'HH:mm'
+                    }
+                },
+                
+            }],
+            xAxes: [{
+                gridLines: {
+                    display: false
+                },
+                ticks: {
+                    suggestedMin: 0,
+                    suggestedMax: 1,
+                    beginAtZero: true,
+                    fontSize: 24
                 }
-            }]
+                
+            }],
+        },
+        legend: {
+            labels: {
+                fontSize: 24
+            }
         },
         animation: {
             easing: "easeInOutBack"
           }
     }
 });
-
-//Chart.defaults.global.animation.duration = animationTime;
 
 const currentContainer = document.querySelector('.chart__figure1') 
 const currentDiv = document.createElement('div')
@@ -248,7 +312,7 @@ let chartCurrent = new Chart(ctx2, {
         datasets: [
             {
                 data: [], 
-                backgroundColor: ['#265F5B'],
+                backgroundColor: ['#73FAC9'],
                 borderWidth: 0 
             }
         ]
@@ -274,7 +338,7 @@ let chartHourly = new Chart(ctx3, {
         datasets: [
             {
                 data: [], 
-                backgroundColor: ['#265F5B'],
+                backgroundColor: ['#73FAC9'],
                 borderWidth: 0 
             }
         ]
@@ -301,7 +365,7 @@ let chartDaily = new Chart(ctx4, {
         datasets: [
             {
                 data: [], 
-                backgroundColor: ['#265F5B'],
+                backgroundColor: ['#73FAC9'],
                 borderWidth: 0 
             }
         ]
@@ -317,11 +381,104 @@ let chartDaily = new Chart(ctx4, {
 dailyDiv.innerHTML = addStringDaily;
 dailyContainer.prepend(dailyDiv.firstChild);
 
+
+
+let gradientFill = ctx.createLinearGradient(500, 0, 100, 0);
+// gradientFill.addColorStop(0, "rgba(128, 182, 244, 0.6)");
+// gradientFill.addColorStop(1, "rgba(244, 144, 128, 0.6)");
+
+gradientFill.addColorStop(1, 'rgba(2,0,36, 0.6)') 
+gradientFill.addColorStop(0, 'rgba(188,68,104, 0.6)');
+
+let ctx5 = document.querySelector('.chart__line-days').getContext('2d')
+let lineChart = new Chart(ctx5, {
+      
+    type: 'bar', 
+    data: {
+        labels: [],
+        datasets: [{
+            label: '# kWh(kilo Watt hour)',
+            // barThickness: 'flex',
+            // maxBarThickness: 50,
+            fill: false,
+            borderColor: 'rgb(188, 68, 104)',
+            borderWidth: 6,
+            data: []
+            }
+        ]
+    },
+    options: {
+        responsive:true,
+        maintainAspectRation: false,
+        scales: {
+            yAxes: [{
+                gridLines: {
+                    display: false
+                },
+                ticks: {
+                    suggestedMin: 0,
+                    suggestedMax: 1,
+                    fontSize:20
+                },
+                
+                
+            }],
+            xAxes: [{
+                gridLines: {
+                    display: true
+                },
+                ticks: {
+                    
+                    beginAtZero: true,
+                    fontSize: 24
+                },
+                type: 'time',
+                time: {
+                    unit: 'week',
+                    stepSize: 1
+                },
+               
+                
+            }],
+        },
+        legend: {
+            labels: {
+                fontSize: 24
+            }
+        },
+        animation: {
+            easing: "easeInOutBack"
+          },
+          plugins: { zoom: {
+            pan: {
+                enabled: true,
+                mode: 'xy',
+                speed: 20
+            },
+            zoom: {
+                enabled: true,
+                mode: 'xy',
+                speed: 0.1,
+                threshold: 2,
+                sensitivity: 3,
+                // Function called while the user is zooming
+                onZoom: function({chart}) { 
+                    // console.log(`I'm zooming!!!`); 
+                },
+                // Function called once zooming is completed
+                onZoomComplete: function({chart}) { 
+                    // console.log(`I was zoomed!!!`); 
+                }
+                }
+            }
+        },
+    }
+});
+
 let start = 60000 - ((date.getMinutes() * 60 + date.getSeconds()) * 1000 + date.getMilliseconds());
 setTimeout(function doSomething() {
-    let now = new Date();
-    let hour = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), (now.getMinutes() - (now.getMinutes() % 60)) + 60, 0, 0)
-    let diff = hour - now
+    let hour = new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), (date.getMinutes() - (date.getMinutes() % 60)) + 60, 0, 0)
+    let diff = hour - date
     if(diff > 100) {
         window.setTimeout(doSomething, diff);
     }
@@ -339,4 +496,34 @@ setTimeout(()=>{
     clearTimeout(timeID)
 }, 2000)
 
+setTimeout(function getTime() {
+    setTimeout(getTime,1000)
+    navbarClock.textContent = clock.format(Date.now())
+}, start)
+
 getPowerNumber('range')
+getPowerNumber('alldata')
+
+let navbarClock = document.querySelector('.navbar__date')
+let navbar = document.querySelector('.navbar')
+let toggleMenuClass = document.querySelector('.hamburger')
+let overlay = document.querySelector('.overlay')
+let sidebarToggle = document.getElementById('sidebar')
+
+toggleMenuClass.addEventListener('click', () => {
+    if(navbar.classList.contains('open')) {
+        navbar.classList.remove('open')
+        overlay.classList.remove('fade-in')
+        overlay.classList.add('fade-out')
+        sidebarToggle.classList.add('fade-out')
+    } else {
+        navbar.classList.add('open')
+        overlay.classList.remove('fade-out')
+        sidebarToggle.classList.remove('fade-out')
+        overlay.classList.add('fade-in')
+        sidebarToggle.classList.add('fade-in')
+        
+        
+    }
+     
+})

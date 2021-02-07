@@ -5,87 +5,163 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>Document</title>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
-		<script defer src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
 		<script defer type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+		<script defer src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+		<script defer src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+		<script defer src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@0.7.7"></script>
+		
 		<script defer type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
 		<script defer src="./main.js"></script>
 		<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
 		<link rel="preconnect" href="https://fonts.gstatic.com">
-		<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-		
+		<!-- <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet"> -->
+		<!-- <script defer src="./modules.js" type="module"></script> -->
+		<script src="https://code.iconify.design/1/1.0.7/iconify.min.js"></script>
 		<link type="text/css" rel="stylesheet" href="./style.css" />
 	</head>
 	<body>
-		<main class="dashboard">
-			<nav class="dashboard__nav">
-				<a class="link__energy" href="javascript:">Energy<div class="test__div"></div></a>
+		<div class="container">
+			
+			<nav class="navbar">
 				
-				<a class="link__schedule" href="#">Schedule<div class="arrow-left"></div></a>
-				<a class="link__control" href="#">Control<div class="arrow-left"></div></a>
+				<div class="nav_icon">
+					<div id="toggleMenu" class="hamburger" >
+						<span></span>
+						<span></span>
+						<span></span>
+					</div>
+				</div>
+				
+				<div class="navbar__right">
+						<div class="navbar__clock">
+							<svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24">
+								<path d="M12 20c4.4 0 8-3.6 8-8s-3.6-8-8-8s-8 3.6-8 8s3.6 8 8 8m0-18c5.5 0 10 4.5 10 10s-4.5 10-10 10S2 17.5 2 12S6.5 2 12 2m.5 10.8l-4.8 2.8l-.7-1.4l4-2.3V7h1.5v5.8z"/>
+							</svg>
+						</div>
+					<div class="navbar__date"></div>
+				</div>
 			</nav>
-			<div class="dashboard__container">
-					<header class="dashboard__header">
-						<h1 class="dashboard__title">Energy Dashboard</h1>
+			<main>
+				<div class="main__container">
+					<div class="overlay"></div>
+					<!-- Dashboard title -->
+					<div class="main__title">
+						<div class="main__greeting">
+							<svg xmlns="http://www.w3.org/2000/svg"width="5em" height="5em" viewBox="0 0 40 40">
+								<path d="M19.996 39.651c-.001 0-.001 0 0 0c-5.262 0-10.199-2.041-13.904-5.746C2.386 30.199.345 25.261.345 20.001S2.386 9.804 6.092 6.099C9.8 2.39 14.739.348 19.997.348c5.255 0 10.193 2.043 13.902 5.752c7.665 7.666 7.665 20.14 0 27.806c-3.707 3.704-8.644 5.745-13.903 5.745zm.001-38.303c-4.991 0-9.678 1.939-13.198 5.458c-3.517 3.517-5.454 8.203-5.454 13.195c0 4.993 1.937 9.68 5.454 13.197c3.516 3.517 8.203 5.453 13.196 5.453h.001c4.992 0 9.678-1.937 13.195-5.453c7.275-7.276 7.275-19.115 0-26.392c-3.52-3.52-8.206-5.458-13.194-5.458z"/>
+								<path d="M17.166 35.691c-.089 0-.184-.015-.283-.043a.965.965 0 0 1-.647-1.091l2.398-12.209l-4.371-1.226a.948.948 0 0 1-.57-1.375l8.241-14.949a.964.964 0 0 1 1.167-.427a.936.936 0 0 1 .592 1.08l-2.146 10.61l4.152.988c.29.079.518.266.638.517a.953.953 0 0 1-.011.834l-8.309 16.763a.952.952 0 0 1-.851.528zm5.481-30.116l-8.08 14.657l4.781 1.278c.251.07.406.322.355.578l-2.414 12.287l8.141-16.423l-4.587-1.03a.5.5 0 0 1-.375-.586l2.179-10.761z"/>
+							</svg>
+							<h1>Energy Tracker</h1>
+							<p>Consumed energy monitoring dashboard</p>
+						</div>
+					</div>
+					<!-- Btn to select date range for doughnut chart and bar chart -->
+					<div class="select__wrapper">
 						<select class="chart__selection">
 							<option class="chart__option">---Select Host---</option>
-						</select><p class="select__title"></p>
-						<button type="button" class="btn__date-picker">&#xf133 Select Range</button>
-					</header>
-					<section class="chart__container">
-							<section class="chart__left-side">
-							
-								
+						</select>
+						<p class="select__title"></p>
+					</div>
+					<div class="btn__wrapper">
+						<label for="btn__label" class="btn__label"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 16 16"><g fill="black"><path fill-rule="evenodd" d="M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1zm1-3a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2H2z"/><path fill-rule="evenodd" d="M3.5 0a.5.5 0 0 1 .5.5V1a.5.5 0 0 1-1 0V.5a.5.5 0 0 1 .5-.5zm9 0a.5.5 0 0 1 .5.5V1a.5.5 0 0 1-1 0V.5a.5.5 0 0 1 .5-.5z"/><path d="M9 7a1 1 0 0 1 1-1h5v2h-5a1 1 0 0 1-1-1zM1 9h4a1 1 0 0 1 0 2H1V9z"/></g></svg> Date Range</label>
+						<button id="btn__label" type="button" class="btn__date-picker">Select</button>
+					</div>
+					<!-- Main cards for all charts on the Dashboard -->
+					<!-- Top charts card -->
+					
+						<div class="chart1">
+							<div class="card__doughnut-range">
+									<canvas class="chart__date-range" width="200" height="200" aria-label="Doughnut chart showing total range data" role="img"></canvas>
+									<div class="chart__top-title">
+										<div>
+											<h1>Range Total</h1>
+											<p>Chart showing total consumed energy from date range </p>
+										</div>
+									</div>
+									<div class="chart__energy-price">
+										<p class="text-primary-p"><span class="chart__dollar" data-count=""> 0</span></p>
+									</div>
+									<h1>Total Energy Cost</h1>
+									<span class="font-bold text-title">Calculated cost of selected date range</span>
+							</div>
+						</div>
+						<div class="chart2">
+							<canvas class="chart__timeseries" width="800px" height="400px" aria-label="Horizontal Bar chart showing timeseries date range" role="img"></canvas>
+						</div>
+					
+						<!-- Bottom charts card-->
+						<div class="bottom__charts">
+							<div class="chart3">
+								<i></i>
 								<div class="chart__figure1">
 									<canvas class="chart__current" width="200" height="200" aria-label="doughnut chart showing data as a Current kWh" role="img">
 									</canvas>
 									<div class="chart__caption1"></figcaption>
-										<span class="canvas__title1">Updated Wh(Watt hour) Used Today</span>
+										<h1 class="canvas__title">kWh<span class="title-highlight">(kiloWatthour)</span></h1>
+										<p>Consumed so far Today</p>
 									</div>
 								</div>
-								
-								
-								<figure class="chart__figure2">
-									<canvas class="chart__hourly" width="200" height="200" aria-label="Example doughnut chart showing data as a Hourly kWh" role="img"></canvas>
-									<figcaption class="chart__caption2">
-										<span class="canvas__title2">Wh(Watt hour) used last hour</span>
-									</figcaption>
-								</figure>
-								
-								<figure class="chart__figure3">
-									<canvas class="chart__daily" width="200" height="200" aria-label="Example doughnut chart showing data as a Daily kWh" role="img"></canvas>
-									<figcaption class="chart__caption3">
-										<span class="canvas__title3">kWh(Killo Watt hour) used previous day</span>
-									</figcaption>
-								</figure>
-							
-							</section>
-							
-							<section class="chart__right-side">
-								
-								<div class="chart__range-container">
-									<canvas class="chart__date-range" width="200" height="200" aria-label="Example doughnut chart showing data as a percentage" role="img"></canvas>
-								</div>
-								<div class="chart__price-circle">	
-									<div class="chart__engergy-price">
-										<p class="chart__price"><span class="chart__dollar" data-count=""> 0</span></p>
-									</div>
-								</div>
-								<div class="chart__line">
-									<p class="chart__line-title">Month to Month chart</p>
-									<canvas class="chart__multi-line" aria-label="Example doughnut chart showing data as a percentage" role="img"></canvas>
-								</div>
-							</section>
-						
-						<section class="chart__line">
-							<p class="chart__title"></p>
-							<p class="chart__day-title"></p>
-							<div class="chart__day-week-month">
-								<canvas class="chart__line-days" aria-label="Example doughnut chart showing data as a kWh line chart" role="img"></canvas>
 							</div>
-						</section>
-					</section>
+							<div class="chart4">
+								<i></i>
+								<div class="chart__figure2">
+									<canvas class="chart__hourly" width="200" height="200" aria-label="doughnut chart showing data as a Hourly kWh" role="img">
+									</canvas>
+									<div class="chart__caption2"></figcaption>
+										<h1 class="canvas__title">Wh<span class="title-highlight">(Watthour)</span></h1>
+										<p>Consumed in the last hour</p>
+									</div>
+								</div>
+							</div>
+							<div class="chart5">
+								<i></i>
+								<div class="chart__figure3">
+									<canvas class="chart__daily" width="200" height="200" aria-label="doughnut chart showing data as a Current kWh" role="img">
+									</canvas>
+									<div class="chart__caption3"></figcaption>
+										<h1 class="canvas__title">kWh(<span class="title-highlight">KiloWatthour)</span></h1>
+										<p>Consumed the previous day</p>
+									</div>
+								</div>
+							</div>
+							<div class="chart6">
+								<canvas class="chart__line-days" width="600px" height="200px" aria-label="Chart showing data as a kWh line chart" role="img"></canvas>
+							</div>
+						</div>
 				</div>
-			</div>
+			<div id="sidebar" class="sidebarToggle">
+				<div class="sidebar__title">
+					
+					<div class="sidebar__menu">
+						<div class="sidebar__link active_menu_link">
+							<span class="icon">
+							<svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 576 512"><path d="M280.37 148.26L96 300.11V464a16 16 0 0 0 16 16l112.06-.29a16 16 0 0 0 15.92-16V368a16 16 0 0 1 16-16h64a16 16 0 0 1 16 16v95.64a16 16 0 0 0 16 16.05L464 480a16 16 0 0 0 16-16V300L295.67 148.26a12.19 12.19 0 0 0-15.3 0zM571.6 251.47L488 182.56V44.05a12 12 0 0 0-12-12h-56a12 12 0 0 0-12 12v72.61L318.47 43a48 48 0 0 0-61 0L4.34 251.47a12 12 0 0 0-1.6 16.9l25.5 31A12 12 0 0 0 45.15 301l235.22-193.74a12.19 12.19 0 0 1 15.3 0L530.9 301a12 12 0 0 0 16.9-1.6l25.5-31a12 12 0 0 0-1.7-16.93z" /></svg>
+						</span>
+							<span class="text">
+							<a href="javascript:">Dashboard</a>
+						</span>
+						</div>
+						<div class="sidebar__link">
+							<span class="icon">
+							<svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24"><g ><path d="M9 20H6a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4h11a4 4 0 0 1 4 4v3" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 2v2"  stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 2v2" stroke="green" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 8h19" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 15.643l-1.5 1.5" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="17" cy="17" r="5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g></svg>
+						</span>
+						<span class="text">
+							<a href="javascript:">Schedule</a>
+						</span>
+						</div>
+						<div class="sidebar__link">
+							<span class="icon">
+							<svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24"><path d="M5.54 8.46L2 12l3.54 3.54l1.76-1.77L5.54 12l1.76-1.77zm12.92 0l-1.76 1.77L18.46 12l-1.76 1.77l1.76 1.77L22 12zm-6.46 10l-1.77-1.76l-1.77 1.76L12 22l3.54-3.54l-1.77-1.76zM8.46 5.54l1.77 1.76L12 5.54l1.77 1.76l1.77-1.76L12 2z" /><circle cx="12" cy="12" r="3"/></svg>
+						</span>
+						<span class="text">
+							<a href="javascirpt:">System Control</a>
+						</span>
+						</div>
+					</div>
+				</div>
+			</div>	
 		</main>
+			
+		</div>
 	</body>
 </html>
