@@ -1,0 +1,36 @@
+Dropdown select element >
+  Use the html select element to build a custom dropdown.  What are the elements to create a select dropdown >
+    Div or Container >
+    Label visible option inside container >
+    Options or list >
+  
+  Feature set: >
+    dropdown
+    select and highlight
+    keyup
+    keydown
+    esc
+    
+  Create template or class >
+  class Name 'Select'
+    select and element.  The name of the select class
+    create customElement "container" 'div'(div)
+    create labelElement 'custom-label'(span)
+    create optionElement 'custom-options'(ul)
+  create a function to setup the custom select dropdown
+    add the custom Element using the after() method the select element
+
+  function called{
+    query the select tag class for use >
+
+    classList.add()
+      class for custom element container >
+      class for custom label >
+      class for options.  Options should be an array to build out the list
+
+  }
+
+
+
+
+  

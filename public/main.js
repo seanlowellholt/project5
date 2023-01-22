@@ -1,4 +1,7 @@
-Date.prototype.subTime = function(h,m){
+
+
+Date.prototype.subTime = function(d,h,m){
+    this.setDate(this.getDate() -d)
     this.setHours(this.getHours() -h)
     this.setMinutes(this.getMinutes() -m)
     return this
@@ -6,6 +9,7 @@ Date.prototype.subTime = function(h,m){
 
 let date = new Date()
 const timestamp = date.toISOString()
+console.log(timestamp)
 const counter = document.querySelector('.chart__dollar')
 const reducer = (accu, currentValue) => accu + currentValue
 const clock = Intl.DateTimeFormat("en", {
@@ -18,6 +22,7 @@ const clock = Intl.DateTimeFormat("en", {
 const getEnergy = async (startDateday, endDateday, chart) => {
     let watt = await fetch(`http://192.168.40.113:1880/totalload?startDateDay=${startDateday}&endDateDay=${endDateday}&command=${chart}`)
     let response = await watt.json()
+    // console.log(watt)
     return response
 }
 
@@ -44,31 +49,29 @@ let dateFormat = Intl.DateTimeFormat("en", {
 function getPowerNumber(value) {
         
     if(value === 'alldata') {
-        const getFirstEntry = new Date('2020, 6, 6')
+        const getFirstEntry = new Date('2020, 6, 28')
         const everyMonth = getFirstEntry.setMonth(5)
         let setMonth = new Date(everyMonth)
         let startdata = setMonth.toISOString()
         let chartType = 'linechart'
-        
+        console.log("Get this"+startdata)
         getEnergy(timestamp, startdata, chartType).then((alldata) => {
             let setLineLabels = []
             let getDates = []
             
             alldata.forEach((data) => {
-                setLineLabels.push(new Date(data.time))
+                let newDate = new Date(data.time)
+                setLineLabels.push(dateFormat.format(newDate))
                 getDates.push(data.sum)
             })
             let setData = getDates.map(i=> {
                 let resetData = (i / 3600 * 10 / 1000).toFixed(2)
                 return Number(resetData)
             })
-            
             lineChart.data.labels = setLineLabels
             lineChart.data.datasets[0].data = setData
             lineChart.update()
         })
-        
-        
     }
 
     if(value === 'range'){
@@ -77,16 +80,12 @@ function getPowerNumber(value) {
         let newMonth = new Date(month)
         let startMonth = newMonth.toISOString()
         let chartType = 'barchart'
-
         getEnergy(timestamp, startMonth, chartType).then((watthour) => {
-            
-            
             let setBarLabels = []
             let getData = []
             
             watthour.forEach((data) => {
                 setBarLabels.push(Date.parse(data.time))
-                // setLineLabels.push(dateFormat.format(new Date(data.time)))
                 getData.push(data.sum)
             })
             let displayWatt = ((getData.reduce(reducer,0)/3600 * 10) / 1000).toFixed(2)
@@ -105,6 +104,7 @@ function getPowerNumber(value) {
             barChart.data.labels = setBarLabels
             barChart.data.datasets[0].data = lineData
             barChart.update()
+            myChart.data.datasets[0].data = [displayWatt, 100 - displayWatt]
             myChart.update()
         })
     } 
@@ -112,20 +112,27 @@ function getPowerNumber(value) {
         const hours = date.setHours(0,0,0,0)
         const midnight = new Date(hours)
         const startDay = midnight.toISOString()
-        getEnergy(timestamp, startDay).then((watthour) => {
-            let watts = (watthour.totalDayload / 1000).toFixed(2)
+        const chartType = 'current'
+        getEnergy(timestamp, startDay, chartType).then((watthour) => {
+            let watts = (watthour[0].sum / 1000).toFixed(2)
+            console.log(watts)
             document.querySelector(`[data-value=${value}]`).textContent = `${watts}\r\nkWh`
             chartCurrent.data.datasets[0].data = [watts, .100 - watts]
+            //console.log(chartCurrent)
             chartCurrent.update()
+            
         })
     }
     if(value === 'hourly') {
-        let setHour = new Date().subTime(1,0)
+        let setHour = new Date().subTime(0,1,0)
         let hours = new Date(setHour.getTime())
         let hour = hours.toISOString()
-        getEnergy(timestamp, hour).then((watthour) => {
-            
-            let watts = (watthour.totalDayload)
+        const chartType = 'hourly'
+        //console.log(hour)
+        getEnergy(timestamp, hour, chartType).then((watthour) => {
+            //console.log('watt hour'+watthour)
+            let watts = (watthour[0].sum / 3600).toFixed(2)
+            console.log(watthour[0].sum)
             document.querySelector(`[data-value=${value}]`).textContent = `${watts}\r\nWh`
             chartHourly.data.datasets[0].data = [watts, .100 - watts]
             chartHourly.update()
@@ -133,26 +140,53 @@ function getPowerNumber(value) {
     }
     if(value === 'daily') {
         let setDay = new Date(date)
+        console.log(`set day:${setDay}`)
         setDay.setDate(setDay.getDate()-1)
-        let hour1 = new Date(setDay.getTime() - (1000*60*60)).toISOString()
-        getEnergy(timestamp, hour1).then((watthour) => {
-            let watts = (watthour.totalDayload / 1000).toFixed(2)
+        console.log(`set Date:${setDay}`)
+        let day = new Date(setDay.getTime() - (1000*60*60)).toISOString()
+        console.log(`new Day:${day}`)
+        const chartType = 'daily'
+        getEnergy(timestamp, day, chartType).then((watthour) => {
+            let watts = (watthour[0].sum / 1000).toFixed(2)
+            // console.log(watts)
             document.querySelector(`[data-value=${value}]`).textContent = `${watts}\r\nkWh`
             chartDaily.data.datasets[0].data = [watts, .100 - watts]
             chartDaily.update()
         })
     }   
 }
+let convertDate = new Date(date)
+class Dates {
+    constructor(baseURL = 'http://192.168.40.113:1880/totalload?'){
+        this.baseURL = baseURL
+    }
+    current(){
+        let formatCurrent = date.setHours(0,0,0,0)
+        let morningdate = new Date(formatCurrent)
+        let current = morningdate.toISOString()
+        return getEnergy(timestamp, current)
+    }
+    hourly(){
+        let formatHour = new Date().subTime(0,1,0)
+        let hour = new Date(formatHour).toISOString()
+        return getEnergy(timestamp, hour)
+    }
+    daily(){
+        let formatday = new Date().subTime(1,0,0) - (1000*60*60)
+        let day = new Date(formatday).toISOString()
+        return getEnergy(timestamp, day)
+    }
+}
 
 async function getDeviceInfo(){
-    let deviceInfo = await fetch('/netio');
+    let deviceInfo = await fetch('http://192.168.40.113/devicename');
     let response = await deviceInfo.json()
     let getDeviceInfo = response
     let name = getDeviceInfo.Agent.DeviceName
-    document.querySelector('.select__title').textContent = `Host Name: ${name}`
+    createOptionsList(name)
 }
 
-getDeviceInfo()
+// getDeviceInfo()
 
 /// dateRangePicker Library to select a date range for Watt load////////
 const dateRangePicker = document.querySelector('.btn__date-picker')
@@ -172,9 +206,10 @@ $(function() {
         
         let setStartDate = `${picker.startDate.format('YYYY-MM-DD')}` 
         let setEndDate = `${picker.endDate.format('YYYY-MM-DD')}`
-        let chartType = 'linechart'
+        let chartType = 'barchart'
         let start = new Date(setStartDate)
         let end = new Date(setEndDate)
+        
         getEnergy(end.toISOString(), start.toISOString(), chartType).then((watts)=> {
             let getLabels = []
             let getData = []
@@ -183,26 +218,20 @@ $(function() {
                 getData.push(data.sum)
             })
             let displayWatt = ((getData.reduce(reducer,0)/3600 * 10) / 1000).toFixed(3)
-            
-            //let wattRange = (watts.totalDayload / 1000).toFixed(2)
             let value = (displayWatt * .12).toFixed(2)
             
             counter.setAttribute('data-count', value)
-            //const dollarcount = counter.getAttribute('data-count')
             updateCount()
             document.querySelector(`[data-value=range]`).textContent = `${displayWatt}\r\nkWh`
             let lineData = getData.map(i=> {
                let resetData = (i / 3600 * 10 / 1000).toFixed(2)
                return Number(resetData)
             })
-            lineChart.data.labels = getLabels
-            lineChart.data.datasets[0].data = lineData
-            lineChart.update()
             barChart.data.labels = getLabels
             barChart.data.datasets[0].data = lineData
             barChart.update()
             myChart.data.datasets[0].data = [displayWatt, 100 - displayWatt]
-	       myChart.update()
+	        myChart.update()
         })
     })
   });
@@ -237,8 +266,6 @@ let myChart = new Chart(ctx, {
 Chart.defaults.global.animation.duration = animationTime;
 divElement.innerHTML = domString;
 rangeContainer.prepend(divElement.firstChild);
-
-
 
 let ctx1 = document.querySelector('.chart__timeseries').getContext('2d')
 let barChart = new Chart(ctx1, {
@@ -302,11 +329,38 @@ let barChart = new Chart(ctx1, {
     }
 });
 
-const currentContainer = document.querySelector('.chart__figure1') 
+const hourlyContainer = document.querySelector('.chart__figure1') 
+const hourlyDiv = document.createElement('div')
+const addStringHourly = '<span class="chart__value-hourly" data-value="hourly"></span>'; 
+let ctx2 = document.querySelector('.chart__hourly').getContext('2d')
+let chartHourly = new Chart(ctx2, {
+    type: 'doughnut', 
+    data: {
+        datasets: [
+            {
+                data: [], 
+                backgroundColor: ['#73FAC9'],
+                borderWidth: 0 
+            }
+        ]
+    },
+    options: {
+        cutoutPercentage: 84, 
+        responsive: false,
+        tooltips: {
+            enabled: false 
+        }
+    }
+});
+hourlyDiv.innerHTML = addStringHourly;
+hourlyContainer.prepend(hourlyDiv.firstChild);
+
+
+const currentContainer = document.querySelector('.chart__figure2') 
 const currentDiv = document.createElement('div')
 const addStringCurrent = '<span class="chart__value-current" data-value="current"></span>'; 
-let ctx2 = document.querySelector('.chart__current').getContext('2d')
-let chartCurrent = new Chart(ctx2, {
+let ctx3 = document.querySelector('.chart__current').getContext('2d')
+let chartCurrent = new Chart(ctx3, {
     type: 'doughnut', 
     data: {
         datasets: [
@@ -328,31 +382,6 @@ let chartCurrent = new Chart(ctx2, {
 currentDiv.innerHTML = addStringCurrent;
 currentContainer.prepend(currentDiv.firstChild);
 
-const hourlyContainer = document.querySelector('.chart__figure2') 
-const hourlyDiv = document.createElement('div')
-const addStringHourly = '<span class="chart__value-hourly" data-value="hourly"></span>'; 
-let ctx3 = document.querySelector('.chart__hourly').getContext('2d')
-let chartHourly = new Chart(ctx3, {
-    type: 'doughnut', 
-    data: {
-        datasets: [
-            {
-                data: [], 
-                backgroundColor: ['#73FAC9'],
-                borderWidth: 0 
-            }
-        ]
-    },
-    options: {
-        cutoutPercentage: 84, 
-        responsive: false,
-        tooltips: {
-            enabled: false 
-        }
-    }
-});
-hourlyDiv.innerHTML = addStringHourly;
-hourlyContainer.prepend(hourlyDiv.firstChild);
 
 const dailyContainer = document.querySelector('.chart__figure3') 
 const dailyDiv = document.createElement('div')
@@ -398,22 +427,28 @@ let lineChart = new Chart(ctx5, {
         labels: [],
         datasets: [{
             label: '# kWh(kilo Watt hour)',
-            // barThickness: 'flex',
-            // maxBarThickness: 50,
+            barThickness: 'flex',
+            maxBarThickness: 50,
+            barPercentage: 0.2,
+            barThickness: 25,
+            minBarLength: 2,
             fill: false,
+            backgroundColor: 'rgba(255,255,255,0.5)',
             borderColor: 'rgb(188, 68, 104)',
-            borderWidth: 6,
-            data: []
+            borderWidth: 2,
+            data: [],
             }
         ]
     },
     options: {
+        
         responsive:true,
         maintainAspectRation: false,
         scales: {
+            offset: true,
             yAxes: [{
                 gridLines: {
-                    display: false
+                    display: true
                 },
                 ticks: {
                     suggestedMin: 0,
@@ -425,18 +460,18 @@ let lineChart = new Chart(ctx5, {
             }],
             xAxes: [{
                 gridLines: {
-                    display: true
+                    display: false
                 },
                 ticks: {
-                    
                     beginAtZero: true,
                     fontSize: 24
                 },
-                type: 'time',
-                time: {
-                    unit: 'week',
-                    stepSize: 1
-                },
+                // type: 'time',
+                // distribution: 'linear'
+                // time: {
+                //     unit: 'week',
+                //     stepSize: 1
+                // },
                
                 
             }],
@@ -449,29 +484,6 @@ let lineChart = new Chart(ctx5, {
         animation: {
             easing: "easeInOutBack"
           },
-          plugins: { zoom: {
-            pan: {
-                enabled: true,
-                mode: 'xy',
-                speed: 20
-            },
-            zoom: {
-                enabled: true,
-                mode: 'xy',
-                speed: 0.1,
-                threshold: 2,
-                sensitivity: 3,
-                // Function called while the user is zooming
-                onZoom: function({chart}) { 
-                    // console.log(`I'm zooming!!!`); 
-                },
-                // Function called once zooming is completed
-                onZoomComplete: function({chart}) { 
-                    // console.log(`I was zoomed!!!`); 
-                }
-                }
-            }
-        },
     }
 });
 
@@ -486,10 +498,10 @@ setTimeout(function doSomething() {
    let d = new Date()
 }, start);
 
-setTimeout(function getCurrent() {
-    setTimeout(getCurrent, 10000)
-    getPowerNumber('current')
-}, start)
+// setTimeout(function getCurrent() {
+//     setTimeout(getCurrent, 10000)
+//     getPowerNumber('current')
+// }, start)
 
 let timeID = setTimeout(getPowerNumber,start,'daily')
 setTimeout(()=>{
@@ -503,7 +515,7 @@ setTimeout(function getTime() {
 
 getPowerNumber('range')
 getPowerNumber('alldata')
-
+console.log('shit')
 let navbarClock = document.querySelector('.navbar__date')
 let navbar = document.querySelector('.navbar')
 let toggleMenuClass = document.querySelector('.hamburger')
@@ -527,3 +539,14 @@ toggleMenuClass.addEventListener('click', () => {
     }
      
 })
+
+// var docWidth = document.documentElement.offsetHeight;
+
+// [].forEach.call(
+//   document.querySelectorAll('*'),
+//   function(el) {
+//     if (el.offsetHeight > docWidth) {
+//       console.log(el);
+//     }
+//   }
+// );
